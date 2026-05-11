@@ -204,8 +204,11 @@ def _compose_verdict(bundle: dict, launchpad_label: str | None, self_seeded: boo
     reasons: list[str] = []
 
     bundle_flags = bundle.get("flags") or []
+    no_holders = "NO_HOLDERS" in bundle_flags
     hard_bundle = any(f in {"BUNDLE", "BUNDLE-FRESH"} for f in bundle_flags)
-    if hard_bundle:
+    if no_holders:
+        reasons.append("no holders on chain — mint may be dead, migrated, or not yet traded")
+    elif hard_bundle:
         reasons.append(f"bundle flags present: {', '.join(bundle_flags)}")
     elif "SNIPER" in bundle_flags:
         reasons.append("single-wallet concentration (SNIPER flag)")
@@ -218,6 +221,8 @@ def _compose_verdict(bundle: dict, launchpad_label: str | None, self_seeded: boo
         reasons.append(f"launchpad recognized: {launchpad_label}")
 
     # Decision matrix
+    if no_holders:
+        return "SKIP", 0, reasons
     if hard_bundle or self_seeded:
         return "SKIP", 15, reasons
     if "SNIPER" in bundle_flags:

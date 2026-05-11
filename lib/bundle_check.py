@@ -189,8 +189,8 @@ async def check_bundle(
     )
     if not holders:
         if verbose:
-            log.info(f"[{symbol}] No top holders returned — treating as CLEAN")
-        return {**empty_result, "flags": [], "verdict": "CLEAN"}
+            log.info(f"[{symbol}] No top holders returned — UNKNOWN (mint may be dead, migrated, or not yet traded)")
+        return {**empty_result, "flags": ["NO_HOLDERS"], "verdict": "UNKNOWN"}
 
     classifier = await get_wallet_classifier(helius_rpc_url)
     for h in holders:
